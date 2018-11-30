@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
+import { AlertsModule } from "../alerts/alerts.module";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { CoreComponent } from './containers/core/core.component';
 import { TopNavBarComponent } from './containers/top-nav-bar/top-nav-bar.component';
@@ -20,7 +21,8 @@ import { routes } from "./routes.core";
     CommonModule,
     FormsModule,
     BrowserAnimationsModule,
-    RouterModule.forChild(routes)    
+    RouterModule.forChild(routes),
+    AlertsModule
   ],
   exports: [
     CoreComponent
