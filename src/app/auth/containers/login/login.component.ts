@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { ILogin } from '../../models/interfaces/auth';
 import { AuthService } from "../../services/auth.service";
 import { Router } from "@angular/router";
@@ -10,7 +10,7 @@ import { Router } from "@angular/router";
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router, private zone: NgZone) { }
 
   ngOnInit() {
   }
@@ -20,7 +20,24 @@ export class LoginComponent implements OnInit {
       this.authService.loginWithEmail(event)
       .then(
         user => {
-          console.log(user);
+          localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
+          this.router.navigate(['main']);
+        }
+      );
+    }
+  }
+
+  signWithGoogle(event) {
+    if(event) {
+      this.authService.loginWithGoogle()
+      .then(
+        user => {
+          localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
+          this.zone.run(
+            _ => {
+              this.router.navigate(['main']);
+            }
+          );          
         }
       );
     }
