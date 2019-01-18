@@ -2,6 +2,11 @@ import { Component, OnInit, NgZone } from '@angular/core';
 import { ILogin } from '../../models/interfaces/auth';
 import { AuthService } from "../../services/auth.service";
 import { Router } from "@angular/router";
+import { MessagesService } from "../../../alerts/services/messages.service";
+import { Store, select } from "@ngrx/store";
+import * as fromAuth from "../../reducers";
+import * as Auth from "../../actions/auth";
+import { UserInfo } from 'firebase';
 
 @Component({
   selector: 'app-login',
@@ -10,36 +15,50 @@ import { Router } from "@angular/router";
 })
 export class LoginComponent implements OnInit {
 
-  constructor(private authService: AuthService, private router: Router, private zone: NgZone) { }
+  error$ = this.store.pipe(select(fromAuth.getError));
+
+  constructor(private authService: AuthService, private router: Router, private zone: NgZone,
+    private store: Store<fromAuth.State>, private msgService: MessagesService) { }
 
   ngOnInit() {
+    this.error$.subscribe(
+      error => {
+        this.msgService.message({ msg: 'Usuario o Contraseña Inválida', type: 'error' });
+      }
+    );
   }
 
   auth(event: ILogin) {
-    if(event){
+    if (event) {
+      this.store.dispatch(new Auth.Login(event));
       this.authService.loginWithEmail(event)
-      .then(
-        user => {
-          localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
-          this.router.navigate(['main']);
-        }
-      );
+        .then(
+          user => {
+            console.log(user);
+            localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
+            this.store.dispatch(new Auth.LoginSuccesful(<UserInfo>user.user.toJSON()));
+            this.router.navigate(['main']);
+          },
+          error => {
+            this.store.dispatch(new Auth.LoginError(error));
+          }
+        );
     }
   }
 
   signWithGoogle(event) {
-    if(event) {
+    if (event) {
       this.authService.loginWithGoogle()
-      .then(
-        user => {
-          localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
-          this.zone.run(
-            _ => {
-              this.router.navigate(['main']);
-            }
-          );          
-        }
-      );
+        .then(
+          user => {
+            localStorage.setItem('bzgPokeAppTwo', JSON.stringify(user));
+            this.zone.run(
+              _ => {
+                this.router.navigate(['main']);
+              }
+            );
+          }
+        );
     }
   }
 
